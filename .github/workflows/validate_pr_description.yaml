@@ -1,0 +1,90 @@
+name: validate PR description
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+
+jobs:
+  validate-pr-description:
+    runs-on: ubuntu-latest
+    env:
+      LABEL: "bot-review"
+      PLACEHOLDER: "[Replace with your detailed information on the above header.]"
+      TEMPLATE: |
+        ## A clearly stated purpose
+        ## Verification, i.e. how did you test your PR?
+
+    steps:
+      - name: Insert Missing Headers into PR Description
+        if: github.event.action == 'opened' || github.event.action == 'edited'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const templateHeaders = process.env.TEMPLATE.split('\n');
+            let body = context.payload.pull_request.body ?? '';
+            let updatedBody = body;
+            let needsUpdate = false;
+
+            templateHeaders.forEach(header => {
+              if (!body.includes(header)) {
+                updatedBody = `${header}\n${process.env.PLACEHOLDER}\n${updatedBody}`;
+                needsUpdate = true;
+              }
+            });
+
+            if (needsUpdate) {
+              await github.rest.pulls.update({
+                pull_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: updatedBody
+              });
+            }
+
+      - name: Validate PR Description Completeness
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const templateHeaders = process.env.TEMPLATE.split('\n');
+            let body = context.payload.pull_request.body ?? '';
+            let hasMissingContent = false;
+
+            templateHeaders.forEach(header => {
+              const headerIndex = body.indexOf(header);
+              if (headerIndex === -1) {
+                hasMissingContent = true;
+                return;
+              }
+
+              const contentBelowHeader = body.substring(headerIndex + header.length).trim().split('\n')[0];
+              if (contentBelowHeader.trim() === '' || contentBelowHeader === process.env.PLACEHOLDER || templateHeaders.includes(contentBelowHeader)) {
+                hasMissingContent = true;
+              }
+            });
+
+            if (hasMissingContent) {
+              await github.rest.issues.addLabels({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: [process.env.LABEL]
+              });
+
+              core.setFailed("Required sections in the PR description are not described. Please provide detailed information under each prefilled header.");
+            } else {
+              try {
+                await github.rest.issues.removeLabel({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: process.env.LABEL
+                });
+              } catch (error) {
+                console.log('Label not found or already removed');
+              }
+            }
