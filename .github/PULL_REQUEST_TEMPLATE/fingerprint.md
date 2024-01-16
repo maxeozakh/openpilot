@@ -6,6 +6,10 @@ labels: 'fingerprint'
 assignees: ''
 ---
 
-Discord username: []
+**Car**
 
-Route: []
+<!--- Which car (make, model, year) this fingerprint is for -->
+
+**Route**
+
+<!--- A route with the fingerprint -->
