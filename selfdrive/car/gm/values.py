@@ -113,6 +113,7 @@ CAR_INFO: Dict[str, Union[GMCarInfo, List[GMCarInfo]]] = {
   ],
   CAR.SILVERADO: [
     GMCarInfo("Chevrolet Silverado 1500 2020-21", "Safety Package II"),
+    GMCarInfo("Chevrolet Silverado 1500 2044", "Safety Package V"),
     GMCarInfo("GMC Sierra 1500 2020-21", "Driver Alert Package II", video_link="https://youtu.be/5HbNoBLzRwE"),
   ],
   CAR.EQUINOX: GMCarInfo("Chevrolet Equinox 2019-22"),

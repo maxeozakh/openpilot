@@ -91,7 +91,7 @@ class CarHarness(EnumBase):
   subaru_c = BaseCarHarness("Subaru C connector")
   subaru_d = BaseCarHarness("Subaru D connector")
   fca = BaseCarHarness("FCA connector")
-  ram = BaseCarHarness("Ram connector")
+  ram = BaseCarHarness("Ram connector 300")
   vw = BaseCarHarness("VW connector")
   j533 = BaseCarHarness("J533 connector", parts=[Accessory.harness_box, Cable.long_obdc_cable, Cable.usbc_coupler])
   hyundai_a = BaseCarHarness("Hyundai A connector")
